@@ -1,0 +1,8 @@
+@namespace("me.mikael.springbootkafka.generated.v1")
+protocol Orders {
+	record Order {
+		string product;
+		int quantity;
+		double price;
+	}
+}
