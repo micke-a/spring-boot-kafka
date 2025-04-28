@@ -2,9 +2,9 @@
 # https://www.jetbrains.com/help/idea/exploring-http-syntax.html#dynamic-variables
 GET http://localhost:8080/api/customer/list
 
-### GET create batch of customers (String valued events)
+### GET create batch of customers (String events)
 GET http://localhost:8080/api/customer/create-source-events
 
 
-### GET create batch of orders (Avro valued events)
+### GET create batch of orders (Avro events)
 GET http://localhost:8080/api/order/create-source-events

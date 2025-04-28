@@ -2,12 +2,39 @@
 
 # Spring Boot + Kafka testing
 
-Notes about testing various spring boot/kafka bits.
+Notes about testing various spring boot/kafka bits using
+
+* Kafka
+* Schema Registry
+* Avro SerDe
+* Postgres DB
+* Docker Compose
+* Spring boot with spring-kafka
+
+## How to get this running
+
+To make sure all code is generated etc. run `mvn clean install -DskipTests`
+
+Just start the `App Compose PGSQL` run configuration within intellij, this should start up the docker containers etc.
+
+Once all is up and running you can start hitting endpoints by using `app.http` which has some things prepared.
 
 ## Things to test out
 
-### Batch processing errors move specific records to DLT
+### Non-Transactional Batch processing errors moved specific records to DLT
 
+Look into RetryListener - can be added to FailedBatchProcessor somehow. -> set on DefaultErrorHandler
+Look into FailedRecordTracker , used by FailedRecordProcessor
+
+
+* FailedBatchProcessor.handle; 
+  * DefaultErrorHandler.handleBatchAndReturnRemaining(
+  * FailedBatchProcessor.doHandle
+     * DefaultErrorHandler.handleBatch
+       * CommonErrorHandler.handleBatchAndReturnRemaining
+
+### Transactional Batch processing errors moved specific records to DLT
+Look into how AfterRollbackProcessor is used for this...
 
 ## Things which had to be resolved
 
@@ -26,4 +53,4 @@ Caused by: org.springframework.messaging.converter.MessageConversionException: C
 Found solution here https://github.com/spring-projects/spring-kafka/issues/1665
 Caused by Spring DevTools causing class to be loaded by different class loaders.
 
-I removed the devtools from this project
+I removed the devtools from this project, don't need it, problem solved without custom config.

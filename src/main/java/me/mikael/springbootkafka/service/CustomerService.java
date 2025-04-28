@@ -21,6 +21,7 @@ public class CustomerService {
     }
 
     public Customer saveCustomer(Customer customer) {
+        log.info("Saving customer: {}", customer.getName());
         return customerRepository.save(customer);
     }
 }

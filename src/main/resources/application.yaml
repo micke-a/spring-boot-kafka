@@ -12,6 +12,9 @@ spring:
         schema.registry.url: http://localhost:8081
         spring.kafka.value.serialization.bytopic.default: org.apache.kafka.common.serialization.StringSerializer
         spring.kafka.value.serialization.bytopic.config: "${app.kafka.orders-topic-name}:io.confluent.kafka.serializers.KafkaAvroSerializer"
+        # Enable header propagation for producers
+        header.propagation.enabled: true
+
       # to ensure that the producer waits for all replicas to acknowledge the write before considering it successful
       acks: all
       retries: 3
@@ -28,13 +31,49 @@ spring:
         specific.avro.reader: true
         spring.kafka.value.serialization.bytopic.default: org.apache.kafka.common.serialization.StringDeserializer
         spring.kafka.value.serialization.bytopic.config: "${app.kafka.orders-topic-name}:io.confluent.kafka.serializers.KafkaAvroDeserializer"
+        # Enable header propagation for consumers
+        header.propagation.enabled: true
+    template:
+      observation-enabled: true
+    listener:
+      observation-enabled: true
+management:
+#  zipkin:
+#    tracing:
+#      endpoint: http://localhost:9411/api/v2/spans
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+    propagation:
+      type: b3, b3_multi, w3c
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        step: 1m
+        descriptions: true
 
-  logging:
-    level:
-      root: info
-      me.mikael: debug
-      org.springframework.transaction: trace
-      org.springframework.kafka.transaction: debug
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}/%X{spanId}] %-5level %logger{36} - %msg%n"
+  level:
+    root: info
+    me.mikael: debug
+#    org.springframework.transaction: trace
+#    org.springframework.kafka.transaction: debug
+    org.springframework.kafka: warn
+    org.apache.kafka: warn
+    io.confluent.kafka: warn
+
 
 app:
   kafka:
