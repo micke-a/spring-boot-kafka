@@ -8,3 +8,7 @@ GET http://localhost:8080/api/customer/create-source-events
 
 ### GET create batch of orders (Avro events)
 GET http://localhost:8080/api/order/create-source-events
+
+
+### GET prometheus metrics
+GET http://localhost:8080/actuator/prometheus

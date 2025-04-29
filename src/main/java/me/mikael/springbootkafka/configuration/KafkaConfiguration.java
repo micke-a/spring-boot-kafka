@@ -9,6 +9,7 @@ import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.DefaultKafkaConsumerFactoryCustomizer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,38 +34,27 @@ public class KafkaConfiguration {
     private final ObservationRegistry observationRegistry;
 
 
+    // Don't ned to do this manually, works without.
 //    @Bean
-//    public ProducerFactory<String, Object> producerFactory(){
-//        return new DefaultKafkaProducerFactory<>(kafkaProperties.buildProducerProperties());
+//    public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory){
+//        KafkaTemplate<String,Object> kafkaTemplate = new KafkaTemplate<>(producerFactory);
+//        kafkaTemplate.setObservationEnabled(true);
+////        kafkaTemplate.setMicrometerEnabled(false);
+//        return kafkaTemplate;
 //    }
 
-//    @Bean
-//    public Propagator propagator(io.micrometer.tracing.Tracer tracer) {
-//        Nreturn Propagator.composite(
-//                new io.micrometer.tracing.propagation.W3CPropagation(tracer),
-//                new io.micrometer.tracing.propagation.B3Propagation()
-//        );
-//    }
-
-
-
-
-    @Bean
-    public KafkaTemplate<String, Object> kafkaTemplate(ProducerFactory<String, Object> producerFactory){
-        KafkaTemplate<String,Object> kafkaTemplate = new KafkaTemplate<>(producerFactory);
-        kafkaTemplate.setObservationEnabled(true);
-//        kafkaTemplate.setMicrometerEnabled(false);
-        return kafkaTemplate;
-    }
 
     @Bean
     public ConsumerFactory<?, ?> kafkaConsumerFactory(
-            KafkaProperties kafkaProperties,
+            DefaultKafkaConsumerFactoryCustomizer consumerFactoryCustomizer,
+                    KafkaProperties kafkaProperties,
             MeterRegistry meterRegistry){
 
         var props = kafkaProperties.buildConsumerProperties(null);
         var consumerFactory = new DefaultKafkaConsumerFactory<String, Object>(props);
-        consumerFactory.addListener(new MicrometerConsumerListener<>(meterRegistry));
+        consumerFactoryCustomizer.customize(consumerFactory);
+        // This needs to be added manually or via customizer above when creating manually
+        //consumerFactory.addListener(new MicrometerConsumerListener<>(meterRegistry));
 
         return consumerFactory;
     }
@@ -76,9 +66,12 @@ public class KafkaConfiguration {
         factory.setConsumerFactory(consumerFactory);
 
         // Enable observations for the listener
+        // Have to put this in, if manually creating this factory (e.g. specify ing error handler like below)
         factory.getContainerProperties().setObservationEnabled(true);
+        factory.getContainerProperties().setMicrometerEnabled(true);
         // Set the ObservationRegistry
-        factory.getContainerProperties().setObservationRegistry(observationRegistry);
+        // consumer picks up traces from header without this, so not needed by the looks of it
+//         factory.getContainerProperties().setObservationRegistry(observationRegistry);
 
         var errorHandler = new DefaultErrorHandler();
         errorHandler.setRetryListeners(new MyRetryListener());

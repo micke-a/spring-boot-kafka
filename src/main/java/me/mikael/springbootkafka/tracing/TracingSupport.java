@@ -29,17 +29,17 @@ public class TracingSupport {
         }
     }
 
-    public void withNewTrace(Headers headers, Runnable runnable) {
-        TraceContext tc = tracer.traceContextBuilder()
-                .traceId(traceId)
-                .spanId(spanId)
-                .sampled(false)
-                .build();
-
-        try (var sc = tracer.currentTraceContext().newScope(tc)) {
-            try(var baggageInScope = this.tracer.createBaggageInScope(tc,"baggage-1", "value-1")) {
-                runnable.run();
-            }
-        }
-    }
+//    public void withNewTrace(Headers headers, Runnable runnable) {
+//        TraceContext tc = tracer.traceContextBuilder()
+//                .traceId(traceId)
+//                .spanId(spanId)
+//                .sampled(false)
+//                .build();
+//
+//        try (var sc = tracer.currentTraceContext().newScope(tc)) {
+//            try(var baggageInScope = this.tracer.createBaggageInScope(tc,"baggage-1", "value-1")) {
+//                runnable.run();
+//            }
+//        }
+//    }
 }
